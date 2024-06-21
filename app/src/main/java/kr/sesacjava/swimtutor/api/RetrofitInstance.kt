@@ -1,7 +1,6 @@
 package com.example.health.api
 
 import android.content.Context
-import android.widget.Toast
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,19 +18,16 @@ object RetrofitInstance {
             .create(ApiService::class.java)
     }
 
-    fun sendDataToServer(stepsDataList: List<StepsData>, context: Context) {
-        stepsDataList.forEach { stepsData ->
-            api.sendStepsData(stepsData).enqueue(object : Callback<Void> {
+    fun sendDataToServer(dataList: List<DistanceData>, context: Context) {
+        dataList.forEach { data ->
+            api.sendDistanceData(data).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(context, "Data sent successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Failed to send data", Toast.LENGTH_SHORT).show()
-                    }
+                    println(response)
+                    return
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    return
                 }
             })
         }

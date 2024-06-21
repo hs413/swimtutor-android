@@ -3,7 +3,7 @@ package kr.sesacjava.swimtutor
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
-import kr.sesacjava.swimtutor.health.HealthConnectHandler
+import kr.sesacjava.swimtutor.health.HealthConnectJsInterface
 import kr.sesacjava.swimtutor.health.HealthConnectManager
 import kr.sesacjava.swimtutor.health.HealthConnectService
 
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         myWebView.settings.javaScriptEnabled = true
         myWebView.settings.domStorageEnabled = true
 
-        myWebView.addJavascriptInterface(HealthConnectHandler(service), "HealthConnect")
-        myWebView.loadUrl("file:///android_asset/web.html")
+        myWebView.addJavascriptInterface(HealthConnectJsInterface(service), "healthConnectJsInterface")
+        myWebView.loadUrl("")
     }
 }
