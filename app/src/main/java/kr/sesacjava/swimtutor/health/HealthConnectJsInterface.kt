@@ -14,7 +14,10 @@ class HealthConnectJsInterface(private val healthConnectService: HealthConnectSe
             val response = healthConnectService.getRecords(date)
 
             for (exerciseRecord in response.records) {
+                healthConnectService.sendDistanceData(exerciseRecord.startTime, exerciseRecord.endTime)
+                healthConnectService.sendCaloriesData(exerciseRecord.startTime, exerciseRecord.endTime)
                 healthConnectService.sendSpeedData(exerciseRecord.startTime, exerciseRecord.endTime)
+                healthConnectService.sendHeartRateData(exerciseRecord.startTime, exerciseRecord.endTime)
             }
         }
     }

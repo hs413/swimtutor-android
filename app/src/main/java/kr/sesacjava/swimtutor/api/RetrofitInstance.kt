@@ -18,9 +18,9 @@ object RetrofitInstance {
             .create(ApiService::class.java)
     }
 
-    fun sendDataToServer(dataList: List<DistanceData>, context: Context) {
+    fun sendDataToServer(dataList: List<SendData>) {
         dataList.forEach { data ->
-            api.sendDistanceData(data).enqueue(object : Callback<Void> {
+            api.sendData(data).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     println(response)
                     return

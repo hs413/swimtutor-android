@@ -7,13 +7,16 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.response.ReadRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
-import com.example.health.api.CaloriesData
-import com.example.health.api.DistanceData
 import com.example.health.api.RetrofitInstance
+import com.example.health.api.SendData
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class HealthConnectService(private val context: Context, private val healthConnectClient: HealthConnectClient, private val webView: WebView/*, private val requestPermissions: ActivityResultLauncher<Set<String>>*/): WebViewClient() {
     suspend fun getRecords(date: String): ReadRecordsResponse<ExerciseSessionRecord> {
@@ -48,17 +51,16 @@ class HealthConnectService(private val context: Context, private val healthConne
             )
 
         val dataList = response.records.map { record ->
-            CaloriesData(record.energy.inJoules,
+            SendData(record.energy.inJoules,
                 record.endTime.toString(),
-                record.startTime.toString())
+                record.startTime.toString(),
+                "calories")
         }
 
-//        withContext(Dispatchers.Main) {
-//            RetrofitInstance.sendDataToServer(dataList, context)
-//        }
+        RetrofitInstance.sendDataToServer(dataList)
     }
 
-    suspend fun sendSpeedData(startTime: Instant, endTime: Instant) {
+    suspend fun sendDistanceData(startTime: Instant, endTime: Instant) {
         val response =
             healthConnectClient.readRecords(
                 ReadRecordsRequest(
@@ -68,12 +70,55 @@ class HealthConnectService(private val context: Context, private val healthConne
             )
 
         val dataList = response.records.map { record ->
-            DistanceData(record.distance.inMeters,
+            SendData(record.distance.inMeters,
                 record.endTime.toString(),
-                record.startTime.toString())
+                record.startTime.toString(),
+                "distance")
         }
 
-        RetrofitInstance.sendDataToServer(dataList, context)
+        RetrofitInstance.sendDataToServer(dataList)
+    }
+
+    suspend fun sendSpeedData(startTime: Instant, endTime: Instant) {
+        val response =
+            healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    SpeedRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                )
+            )
+
+        val dataList = response.records.map { record ->
+            val avg = record.samples.fold(0.0) { acc, cur -> acc + cur.speed.inMetersPerSecond } / record.samples.size
+
+            SendData(avg,
+                record.endTime.toString(),
+                record.startTime.toString(),
+                "speed")
+        }
+
+        RetrofitInstance.sendDataToServer(dataList)
+    }
+
+    suspend fun sendHeartRateData(startTime: Instant, endTime: Instant) {
+        val response =
+            healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    HeartRateRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                )
+            )
+
+        val dataList = response.records.map { record ->
+            val avg = record.samples.fold(0.0) { acc, cur -> acc + cur.beatsPerMinute } / record.samples.size
+
+            SendData(avg,
+                record.endTime.toString(),
+                record.startTime.toString(),
+                "heartRate")
+        }
+
+        RetrofitInstance.sendDataToServer(dataList)
     }
 
     /*suspend fun checkPermissionsAndRun() {
